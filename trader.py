@@ -95,3 +95,8 @@ class AutoTrader:
             except Exception as e:
                 print("❌ خطا در اجرای ربات:", e)
                 time.sleep(60)
+
+# ✨ اجرای واقعی ربات:
+if __name__ == "__main__":
+    bot = AutoTrader()
+    bot.run()
