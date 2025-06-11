@@ -3,15 +3,16 @@ import pandas as pd
 from bitunix_api import BitunixAPI
 from analyzer import Analyzer
 from predictor import LSTMPredictor
+import os
 
 class AutoTrader:
-    def __init__(self, api_key, api_secret, symbol="BTCUSDT", quantity_usdt=50, leverage=10):
-        self.client = BitunixAPI(api_key, api_secret)
+    def __init__(self, symbol="BTCUSDT", quantity_usdt=50, leverage=10):
+        self.client = BitunixAPI(os.getenv("API_KEY"), os.getenv("API_SECRET"))
         self.predictor = LSTMPredictor()
         self.symbol = symbol
         self.quantity_usdt = quantity_usdt
         self.leverage = leverage
-        self.position = None  # برای ثبت وضعیت پوزیشن باز
+        self.position = None
 
     def get_kline_data(self):
         data = self.client.get_kline(symbol=self.symbol, interval="5m", limit=50)
@@ -36,11 +37,7 @@ class AutoTrader:
         response = self.client.place_order(self.symbol, side, price, qty, pos_side, self.leverage)
         print("Order response:", response)
         if response.get('code') == 0:
-            self.position = {
-                'direction': direction,
-                'entry_price': price,
-                'quantity': qty
-            }
+            self.position = {'direction': direction,'entry_price': price,'quantity': qty}
 
     def close_position(self, direction):
         price = self.client.get_market_price(self.symbol)
@@ -62,14 +59,11 @@ class AutoTrader:
                     if score >= 4 and prediction > last_price * 1.002:
                         print("✅ Open LONG")
                         self.open_position("LONG", price)
-
                     elif score >= 4 and prediction < last_price * 0.998:
                         print("✅ Open SHORT")
                         self.open_position("SHORT", price)
-
                     else:
                         print("🔎 No signal... waiting")
-
                 else:
                     entry = self.position['entry_price']
                     direction = self.position['direction']
@@ -78,17 +72,17 @@ class AutoTrader:
                         tp = entry * 1.015
                         sl = entry * 0.99
                         if price >= tp or price <= sl:
-                            print("📈 Take Profit or Stop Loss hit (LONG)")
+                            print("📈 TP/SL hit (LONG)")
                             self.close_position(direction)
 
                     elif direction == "SHORT":
                         tp = entry * 0.985
                         sl = entry * 1.01
                         if price <= tp or price >= sl:
-                            print("📉 Take Profit or Stop Loss hit (SHORT)")
+                            print("📉 TP/SL hit (SHORT)")
                             self.close_position(direction)
 
-                time.sleep(60)  # هر دقیقه بررسی می‌کند
+                time.sleep(60)
 
             except Exception as e:
                 print("Error:", e)

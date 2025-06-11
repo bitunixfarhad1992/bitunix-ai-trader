@@ -12,7 +12,7 @@ class LSTMPredictor:
         close_data = df['close'].values.reshape(-1, 1)
         scaled = self.scaler.transform(close_data)
 
-        X_input = scaled[-50:]  # آخرین ۵۰ کندل
+        X_input = scaled[-50:]
         X_input = X_input.reshape(1, 50, 1)
 
         predicted_scaled = self.model.predict(X_input)

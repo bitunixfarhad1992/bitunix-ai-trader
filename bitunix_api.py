@@ -50,38 +50,29 @@ class BitunixAPI:
         response = requests.request(method, url, headers=headers, data=body)
         return response.json()
 
-    # دریافت کندل‌ها (تاریخی)
     def get_kline(self, symbol="BTCUSDT", interval="5m", limit=100):
         endpoint = "/v1/market/kline"
-        params = {
-            "symbol": symbol,
-            "interval": interval,
-            "limit": limit
-        }
+        params = {"symbol": symbol,"interval": interval,"limit": limit}
         return self._send_request("GET", endpoint, params=params)
 
-    # گرفتن قیمت مارکت فعلی
     def get_market_price(self, symbol="BTCUSDT"):
         endpoint = "/v1/market/ticker"
-        params = {
-            "symbol": symbol
-        }
+        params = {"symbol": symbol}
         response = self._send_request("GET", endpoint, params=params)
         return float(response['data'][0]['lastPrice'])
 
-    # ارسال سفارش فیوچرز
     def place_order(self, symbol, side, price, quantity, position_side="LONG", leverage=10):
         endpoint = "/v1/private/order/create"
         data = {
             "symbol": symbol,
             "price": str(price),
             "vol": str(quantity),
-            "side": side,  # 1 = buy , 2 = sell
+            "side": side,
             "leverage": leverage,
             "positionSide": position_side,
-            "orderType": 1,  # 1=limit 2=market
-            "tradeType": 1,  # 1=futures
-            "openType": 1,   # 1=cross margin
+            "orderType": 1,
+            "tradeType": 1,
+            "openType": 1,
             "externalOid": str(int(time.time() * 1000))
         }
         return self._send_request("POST", endpoint, data=data, private=True)

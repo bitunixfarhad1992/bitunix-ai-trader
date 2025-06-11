@@ -2,36 +2,30 @@ import pandas as pd
 import numpy as np
 
 class Analyzer:
-
     def __init__(self, df):
         self.df = df
 
     def calculate_indicators(self):
         df = self.df
 
-        # EMA
         df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
         df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
 
-        # RSI
         delta = df['close'].diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
         rs = gain / loss
         df['RSI'] = 100 - (100 / (1 + rs))
 
-        # MACD
         exp1 = df['close'].ewm(span=12, adjust=False).mean()
         exp2 = df['close'].ewm(span=26, adjust=False).mean()
         df['MACD'] = exp1 - exp2
         df['Signal_Line'] = df['MACD'].ewm(span=9, adjust=False).mean()
 
-        # Bollinger Bands
         df['Middle_Band'] = df['close'].rolling(window=20).mean()
         df['Upper_Band'] = df['Middle_Band'] + 2 * df['close'].rolling(window=20).std()
         df['Lower_Band'] = df['Middle_Band'] - 2 * df['close'].rolling(window=20).std()
 
-        # ADX
         high = df['high']
         low = df['low']
         close = df['close']
@@ -47,7 +41,6 @@ class Analyzer:
         dx = (abs(plus_di - minus_di) / abs(plus_di + minus_di)) * 100
         df['ADX'] = dx.rolling(window=14).mean()
 
-        # Stochastic RSI
         min_val = df['RSI'].rolling(window=14).min()
         max_val = df['RSI'].rolling(window=14).max()
         df['StochRSI'] = (df['RSI'] - min_val) / (max_val - min_val)
@@ -57,7 +50,6 @@ class Analyzer:
     def check_entry(self):
         df = self.df
         latest = df.iloc[-1]
-
         score = 0
 
         if latest['EMA9'] > latest['EMA21']:
@@ -74,4 +66,3 @@ class Analyzer:
             score += 1
 
         return score
-
