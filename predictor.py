@@ -5,7 +5,7 @@ import joblib
 
 class LSTMPredictor:
     def __init__(self, model_path="model_lstm_bitunix.h5", scaler_path="scaler_lstm.save"):
-        self.model = load_model(model_path)
+        self.model = load_model(model_path, compile=False)
         self.scaler = joblib.load(scaler_path)
 
     def predict_next_price(self, df):
